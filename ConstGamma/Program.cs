@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace ConstGamma;
+﻿namespace ConstGamma;
 
 public class Program
 {
@@ -12,24 +10,17 @@ public class Program
     static double CalculateT(int n) 
         => (Pi / 8.0 * n) + Gamma;
 
-    static string FormatSEquation(int n)
-    {
-        var builder = new StringBuilder();
-        for(int i = 1; i <= n; i++)
-        {
-            builder.Append($"1/{i}");
-            if (i < n) builder.Append(" + ");
-        }
-        return builder.ToString();
-    }
+    static string FormatEquation(int n) 
+        => string.Join(" + ", Enumerable.Range(1, n).Select(i => $"1/{i}"));
+
     static void Main(string[] args)
     {
         const int n = 10;
         for(int i = 1; i < n; i++)
         {
-            double s = CalculateS(i);
-            double t = CalculateT(i);
-            Console.WriteLine($"i={i},\tdiff={s - t},\tt = {Pi}/8 +{Gamma} = {t},\ts = {FormatSEquation(i)}={s}");
+            var s = CalculateS(i);
+            var t = CalculateT(i);
+            Console.WriteLine($"i={i},\tdiff={s - t},\tt = {Pi}/8 +{Gamma} = {t},\ts = {FormatEquation(i)}={s}");
         }
 
     }
