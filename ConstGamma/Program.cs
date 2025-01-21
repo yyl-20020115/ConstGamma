@@ -2,7 +2,7 @@
 
 public class Program
 {
-    public const double Gamma = 0.57721_56649_01532_86060_65120_90082_40243_10421_59335;
+    public const double Gamma = 0.577215664901532860606512090082402431042159335;
     public const double Pi = Math.PI;
 
     static double CalculateS(int n) 
@@ -15,13 +15,15 @@ public class Program
 
     static void Main(string[] args)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         const int n = 10;
         for(int i = 1; i < n; i++)
         {
             var s = CalculateS(i);
             var t = CalculateT(i);
-            Console.WriteLine($"i={i},\tdiff={s - t},\tt = {Pi}/8 +{Gamma} = {t},\ts = {FormatEquation(i)}={s}");
+            Console.WriteLine(
+                $"i={i},\tdiff={s - t},\tt = {Pi}/8 +{Gamma} = {t},\ts = {FormatEquation(i)}={s}");
         }
-
     }
 }
