@@ -81,14 +81,14 @@ public class Program
         var zr = ZetaRecursive(n, s);
 
         var zre = ZetaRecursiveExtended(n, s);
-        var zrle = ZetaRecursiveLogExtended(n, s);
+        var zle = ZetaRecursiveLogExtended(n, s);
 
         Console.WriteLine($"ZetaOrdinary\t({n}, {s}) = {zo}");
         Console.WriteLine($"ZetaExponetial\t({n}, {s}) = {ze}");
         Console.WriteLine($"ZetaRecursive\t({n}, {s}) = {zr}");
 
         Console.WriteLine($"ZetaRecursiveExtended\t({n}, {s}) = {zre}");
-        Console.WriteLine($"ZetaRecursiveLogExtended\t({n}, {s}) = {zrle}");
+        Console.WriteLine($"ZetaRecursiveLogExtended\t({n}, {s}) = {zle}");
 
         if (false)
         {
