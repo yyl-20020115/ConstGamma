@@ -150,23 +150,43 @@ public class Program
         }
         return sum;
     }
-    static bool ZetaZero(double min = -16, long steps = 1000, double error = 5e-3)
+    static string GetSign(double d) => d >= 0 ? "+" : "";
+
+    class ComplexComparer : IComparer<(Complex, double)>
     {
+        public int Compare((Complex, double) x, (Complex, double) y)
+        {
+            return Math.Abs(x.Item1.Real)>=Math.Abs(y.Item1.Real)?1:0;
+        }
+    }
+    static bool GetZetaResults(double min = -16, long steps = 1600, double error = 5e-3)
+    {
+        var ms = new List<(Complex c,double b)>();
         for (double b = 0.0; b >= min; b += min / steps)
         {
             var n = ZetaComplex(b, error);
             var z = n / n.Magnitude;
-            if (Math.Abs(n.Real) < error)
+
+            var m = Math.Abs(n.Real) < Math.Abs(z.Real) ? n : z;
+            ms.Add((m,b));
+        }
+
+        ms.Sort(new ComplexComparer());
+        for (int i = 0; i < ms.Count; i++)
+        {
+            var m = ms[i].c;
+            var b = ms[i].b;
+            if (Math.Abs(m.Real) < 1e-2)
             {
-                Console.WriteLine($"T:ZetaZero({min},{steps}) = {z.Real:N8}\t{z.Imaginary:N8}\t, b={b}");
+                Console.WriteLine($"T:ZetaZero = {GetSign(m.Real)}{m.Real:N8}{GetSign(m.Imaginary)}{m.Imaginary:N8}i, b={GetSign(b)}{b:N8}");
             }
             else
             {
-                Console.WriteLine($"F:ZetaZero({min},{steps}) = {z.Real:N8}\t{z.Imaginary:N8}\t, b={b}");
+                Console.WriteLine($"F:ZetaZero = {GetSign(m.Real)}{m.Real:N8}{GetSign(m.Imaginary)}{m.Imaginary:N8}i, b={GetSign(b)}{b:N8}");
             }
         }
 
-        return false;
+        return true;
     }
     static void Main(string[] args)
     {
@@ -176,7 +196,7 @@ public class Program
             Console.WriteLine($"NontrivalZeros[{i}] = {NontrivalZeros[i]}, Imaginary/Pi={NontrivalZeros[i].Imaginary / Math.PI}");
         }
 
-        ZetaZero();
+        GetZetaResults();
 
         var n = 4000;
         var nr = 2200;
