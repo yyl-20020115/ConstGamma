@@ -5,16 +5,16 @@ namespace ConstGamma;
 public class Program
 {
     public static readonly Complex[] NontrivalZeros = [
-        new (0.5 ,- 14.134725141734693730968711),
-        new (0.5, - 21.02203964204755334282958),
-        new (0.5, - 25.01082562396885707143764),
-        new (0.5, - 28.57182697383300413620860),
-        new (0.5, - 31.46260704941565719677549),
-        new (0.5, - 34.13428610227788947322655),
-        new (0.5, - 36.62904395886886437039029),
-        new (0.5, - 38.9997672119303999877777),
-        new (0.5, - 41.2425926398458654312819),
-        new (0.5, - 43.4167801777518566141529)
+        new (0.5, -14.134725141734693730968711),
+        new (0.5, -21.02203964204755334282958),
+        new (0.5, -25.01082562396885707143764),
+        new (0.5, -28.57182697383300413620860),
+        new (0.5, -31.46260704941565719677549),
+        new (0.5, -34.13428610227788947322655),
+        new (0.5, -36.62904395886886437039029),
+        new (0.5, -38.9997672119303999877777),
+        new (0.5, -41.2425926398458654312819),
+        new (0.5, -43.4167801777518566141529)
         ];
 
 
@@ -134,24 +134,35 @@ public class Program
         return sum;
     }
 
-    static Complex ZetaComplex(long n, double b)
+    static Complex ZetaComplex(double b, double error)
     {
-        Complex s = 1;
-        for (long i = 2; i <= n; i++)
+        var sum = Complex.One;
+        var bp = b * Math.PI;
+        var s = new Complex(0.5, bp);
+        for (var i = 1.0; ; i++)
         {
-            s += Complex.Pow(1.0 / i, new Complex(0.5, b * Math.PI));
-        }
-        return s;
-    }
-    static bool ZetaZero(long n, double max, long segments, double error = 1.0e-6)
-    {
-        for(double b = 0.0;b< max; b += max / segments)
-        {
-            var z = ZetaComplex(n, b);
-            if (z.Magnitude < error)
+            var v = Complex.Pow(i, -s);
+            if (v.Magnitude < error)
             {
-                Console.WriteLine($"ZetaZero({n},{max},{segments}) = {z}, b={b}");
-                //return true;
+                break;
+            }
+            sum += v;
+        }
+        return sum;
+    }
+    static bool ZetaZero(double min = -16, long steps = 1000, double error = 5e-3)
+    {
+        for (double b = 0.0; b >= min; b += min / steps)
+        {
+            var n = ZetaComplex(b, error);
+            var z = n / n.Magnitude;
+            if (Math.Abs(n.Real) < error)
+            {
+                Console.WriteLine($"T:ZetaZero({min},{steps}) = {z.Real:N8}\t{z.Imaginary:N8}\t, b={b}");
+            }
+            else
+            {
+                Console.WriteLine($"F:ZetaZero({min},{steps}) = {z.Real:N8}\t{z.Imaginary:N8}\t, b={b}");
             }
         }
 
@@ -162,10 +173,10 @@ public class Program
         ArgumentNullException.ThrowIfNull(args);
         for (int i = 0; i < NontrivalZeros.Length; i++)
         {
-            Console.WriteLine($"NontrivalZeros[{i}] = {NontrivalZeros[i]}, Imaginary/Pi={NontrivalZeros[i].Imaginary/Math.PI}");
+            Console.WriteLine($"NontrivalZeros[{i}] = {NontrivalZeros[i]}, Imaginary/Pi={NontrivalZeros[i].Imaginary / Math.PI}");
         }
 
-        ZetaZero(120, 8, 100, 0.5);
+        ZetaZero();
 
         var n = 4000;
         var nr = 2200;
