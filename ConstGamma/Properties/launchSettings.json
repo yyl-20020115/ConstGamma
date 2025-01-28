@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConstGamma": {
+      "commandName": "Project",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}
