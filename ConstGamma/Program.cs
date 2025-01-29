@@ -194,6 +194,22 @@ public class Program
         return sum;
     }
 
+    static DecimalComplex ZetaDecimalComplex(decimal b, decimal eps = 5e-3m)
+    {
+        var sum = DecimalComplex.One;
+        var bp = b * DecimalComplex.Pi;
+        var s = new DecimalComplex(0.5m, bp);
+        for (var i = 2.0; ; i++)
+        {
+            var v = DecimalComplex.Pow(i, -s);
+            if (v.Magnitude < eps)
+            {
+                break;
+            }
+            sum += v;
+        }
+        return sum;
+    }
 
     static string GetSign(double d) => d >= 0 ? "+" : "";
 
@@ -273,7 +289,13 @@ public class Program
 
         var b = NontrivalZeros[0].Imaginary;
 
-        var z = ZetaBigComplex(b);
+        //var zt = ZetaDecimalComplex((decimal)b/DecimalComplex.Pi);
+        //var rt = zt.Magnitude;
+        //var xt = zt.Real / rt;
+        //var yt = zt.Imaginary / rt;
+
+
+        var z = ZetaBigComplex(b/Pi);
         var r = z.Magnitude;
         var rx = z.Real / r;
         var ri = z.Imaginary / r;
