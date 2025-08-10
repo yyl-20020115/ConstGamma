@@ -49,9 +49,9 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
     public double Phase => Math.Atan2(this.imaginary, this.real);
     public double PhaseDegrees => Phase * (180.0 / Math.PI);
     public double Integral => Math.FusedMultiplyAdd(this.imaginary, this.semicycle, this.real);
-    public bool IsGeneralZero => this.real == 0.0 && this.imaginary == 0.0;
-    public bool IsGeneralOne => this.real == 1.0 && this.imaginary == 0.0;
-    public bool IsGeneralImaginaryOne => this.real == 0.0 && this.imaginary == 1.0;
+    public bool IsGenericZero => this.real == 0.0 && this.imaginary == 0.0;
+    public bool IsGenericOne => this.real == 1.0 && this.imaginary == 0.0;
+    public bool IsGenericImaginaryOne => this.real == 0.0 && this.imaginary == 1.0;
 
     public static CyclicalComplex FromPolarCoordinates(double magnitude, double phase, double semicycle = DefaultSemicycle)
     {
@@ -92,7 +92,7 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     //倒数
     public static CyclicalComplex Reciprocal(CyclicalComplex value)
-        => value.real == 0.0 && value.imaginary == 0.0
+        => value.IsGenericZero
         ? CyclicalZero(value.semicycle)
         : CyclicalOne(value.semicycle) / value
         ;
@@ -141,9 +141,9 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     public static void NormalizePolars(ref double magnitude, ref double phase, double semicycle)
     {
-        var p = FromPolarCoordinates(magnitude, phase, semicycle);
-        magnitude = p.Magnitude;
-        phase = p.Phase;
+        var complex = FromPolarCoordinates(magnitude, phase, semicycle);
+        magnitude = complex.Magnitude;
+        phase = complex.Phase;
     }
 
     /// <summary>
@@ -212,17 +212,9 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     public static double Abs(CyclicalComplex value)
     {
-        if (double.IsInfinity(value.real) || double.IsInfinity(value.imaginary)) return 0.0;
-        var nr = Abs(value.real);
-        var ni = Abs(value.imaginary);
-        if (nr > ni)
-        {
-            var m = ni / nr;
-            return nr * Math.Sqrt(1.0 + m * m);
-        }
-        if (ni == 0.0) return nr;
-        var n = nr / ni;
-        return ni * Math.Sqrt(1.0 + n * n);
+        var real = Math.Abs(value.real);
+        var imaginary = Math.Abs(value.imaginary);
+        return Math.Sqrt(real * real + imaginary * imaginary);
     }
 
 
@@ -420,26 +412,26 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     public static CyclicalComplex Pow(CyclicalComplex value, CyclicalComplex power)
     {
-        if (power.IsGeneralZero)
+        if (power.IsGenericZero)
         {
             return CyclicalOne(value.semicycle);
         }
-        else if (value.IsGeneralZero)
+        else if (value.IsGenericZero)
         {
             return CyclicalZero(value.semicycle);
         }
-        var real = value.real;
-        var imaginary = value.imaginary;
-        var real2 = power.real;
-        var imaginary2 = power.imaginary;
-        var num1 = Abs(value);
-        var num2 = Math.Atan2(imaginary, real);
-        var num3 = real2 * num2 + imaginary2 * Math.Log(num1);
-        var num4 = Math.Pow(num1, real2) * Math.Pow(Math.E, -imaginary2 * num2);
-        real = num4 * Math.Cos(num3);
-        imaginary = num4 * Math.Sin(num3);
-        NormalizeParts(ref real, ref imaginary, value.semicycle);
-        return new(real, imaginary, value.semicycle);
+        var rv = value.real;
+        var iv = value.imaginary;
+        var rp = power.real;
+        var ip = power.imaginary;
+        var a = Abs(value);
+        var k = Math.Atan2(iv, rv);
+        var s = rp * k + ip * Math.Log(a);
+        var u = Math.Pow(a, rp) * Math.Pow(Math.E, -ip * k);
+        rv = u * Math.Cos(s);
+        iv = u * Math.Sin(s);
+        NormalizeParts(ref rv, ref iv, value.semicycle);
+        return new(rv, iv, value.semicycle);
     }
 
     public static CyclicalComplex Pow(CyclicalComplex value, double power)
