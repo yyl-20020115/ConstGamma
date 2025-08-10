@@ -268,7 +268,7 @@ public readonly struct DecimalComplex(decimal real, decimal imaginary) : IEquata
         => new (Log(Abs(value)), Atan2(value.imaginary, value.real));
 
     public static DecimalComplex Log(DecimalComplex value, decimal baseValue) 
-        => new (Log(Abs(value)), Atan2(value.imaginary, value.real));
+        => Log(value)/Log(new DecimalComplex(baseValue,0.0m));
 
 
     public static DecimalComplex Log10(DecimalComplex value)

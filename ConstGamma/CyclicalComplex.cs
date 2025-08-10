@@ -7,7 +7,9 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 {
     private readonly double real = real;
     private readonly double imaginary = imaginary;
-    private readonly double semicycle = semicycle > 0 ? semicycle : throw new ArgumentOutOfRangeException(nameof(semicycle));
+    private readonly double semicycle = semicycle > 1 ?
+        semicycle : throw new ArgumentOutOfRangeException(nameof(semicycle), "Semicycle must be greater than 1.");
+
     private const double LOG_10_INV = 0.43429448190325;
 
     public const double DefaultSemicycle = 1.34078079299426e+154;//Math.Sqrt(double.MaxValue)
@@ -17,15 +19,13 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     public double Real => this.real;
     public double Imaginary => this.imaginary;
-
     public double Semicycle => this.semicycle;
-
-    public double Cycle => this.semicycle * this.semicycle + 1;
-
+    public double SemicycleSquared => this.semicycle * this.semicycle;
+    public double SemicycleInverse => 1.0 / this.semicycle;
+    public double Cycle => this.SemicycleSquared + 1;
     public double Magnitude => Abs(this);
-
     public double Phase => Math.Atan2(this.imaginary, this.real);
-
+    public double PhaseDegrees => Phase * (180.0 / Math.PI);
     public static CyclicalComplex FromPolarCoordinates(double magnitude, double phase, double semicycle = DefaultSemicycle)
     {
         NormalizePolars(ref magnitude, ref phase, semicycle);
@@ -51,8 +51,8 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     public static double NormalizeCycle(ref CyclicalComplex left, ref CyclicalComplex right)
     {
-        if (left.semicycle <= 0) throw new ArgumentOutOfRangeException(nameof(left.semicycle), "Cycle must be a positive number.");
-        if (right.semicycle <= 0) throw new ArgumentOutOfRangeException(nameof(right.semicycle), "Cycle must be a positive number.");
+        if (left.semicycle <= 1) throw new ArgumentOutOfRangeException(nameof(left), "Semicycle must be greater than 1.");
+        if (right.semicycle <= 1) throw new ArgumentOutOfRangeException(nameof(right), "Semicycle must be greater than 1.");
 
         var newCycle = left.semicycle;
         // 计算新的周期:以大周期为基准，小周期向大周期靠拢
@@ -75,7 +75,7 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
     public static void NormalizeParts(ref double real, ref double imaginary, double semicycle)
     {
-        if (semicycle <= 0) throw new ArgumentOutOfRangeException(nameof(semicycle), "Cycle must be a positive number.");
+        if (semicycle <= 1) throw new ArgumentOutOfRangeException(nameof(semicycle), "Semicycle must be greater than 1.");
         // 如果实部超过周期，则需要将其调整到周期范围内
         if (Math.Abs(real) > semicycle)
         {
@@ -83,10 +83,15 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
             imaginary += (real - reminder) / semicycle;
             real = reminder;
         }
+        var inverseSemicycle = 1.0 / semicycle;
+        if (Math.Abs(real) < inverseSemicycle)
+        {
+            real = 0.0;
+        }
     }
     public static void NormalizePolars(ref double magnitude, ref double phase, double semicycle)
     {
-        if (semicycle <= 0) throw new ArgumentOutOfRangeException(nameof(semicycle), "Cycle must be a positive number.");
+        if (semicycle <= 1) throw new ArgumentOutOfRangeException(nameof(semicycle), "Semicycle must be greater than 1.");
         // 如果实部超过周期，则需要将其调整到周期范围内
         if (Math.Abs(magnitude) > semicycle)
         {
@@ -150,7 +155,7 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
             real = (real + imaginary * n) / (real2 + imaginary2 * n);
             imaginary = (imaginary - real * n) / (real2 + imaginary2 * n);
             NormalizeParts(ref real, ref imaginary, newCycle);
-            return new (real, imaginary, newCycle);
+            return new(real, imaginary, newCycle);
         }
         else
         {
@@ -158,7 +163,7 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
             real = (imaginary + real * n) / (imaginary2 + real2 * n);
             imaginary = (-real + imaginary * n) / (imaginary2 + real2 * n);
             NormalizeParts(ref real, ref imaginary, newCycle);
-            return new (real, imaginary, newCycle);
+            return new(real, imaginary, newCycle);
         }
     }
 
@@ -202,7 +207,8 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
 
 
     public override bool Equals(object? o)
-        => o is CyclicalComplex complex && this == complex;
+        => o is CyclicalComplex complex && this == complex
+        ;
 
 
     public bool Equals(CyclicalComplex value)
@@ -252,20 +258,11 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
         => new((double)value, 0.0, DefaultSemicycle);
 
 
-    public override string ToString() => string.Format(CultureInfo.CurrentCulture, "({0}, {1}, {2})",
+    public override string ToString()
+        => $"({this.real}, {this.imaginary}, {this.semicycle})";
 
-            this.real,
-            this.imaginary,
-            this.semicycle
-        );
-
-
-    public string ToString(string format) => string.Format(CultureInfo.CurrentCulture, "({0}, {1}, {2})",
-
-            this.real.ToString(format, CultureInfo.CurrentCulture),
-            this.imaginary.ToString(format, CultureInfo.CurrentCulture),
-            this.semicycle.ToString(format, CultureInfo.CurrentCulture)
-        );
+    public string ToString(string format)
+        => $"({this.real.ToString(format, CultureInfo.CurrentCulture)}, {this.imaginary.ToString(format, CultureInfo.CurrentCulture)}, {this.semicycle.ToString(format, CultureInfo.CurrentCulture)})";
 
 
     public string ToString(IFormatProvider provider) => string.Format(provider, "({0}, {1}, {2})",
@@ -275,14 +272,12 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
             this.semicycle
         );
 
-
     public string ToString(string format, IFormatProvider provider) => string.Format(provider, "({0}, {1}, {2})",
 
             this.real.ToString(format, provider),
             this.imaginary.ToString(format, provider),
             this.semicycle.ToString(format, provider)
         );
-
 
     public override int GetHashCode()
     {
@@ -310,7 +305,6 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
         return -io * Log(io * value + Sqrt(ro - value * value));
     }
 
-
     public static CyclicalComplex Sinh(CyclicalComplex value)
     {
         var real = value.real;
@@ -320,8 +314,6 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
         NormalizeParts(ref real, ref imaginary, value.semicycle);
         return new(real, imaginary, value.semicycle);
     }
-
-
 
     public static CyclicalComplex Cos(CyclicalComplex value)
     {
@@ -343,22 +335,18 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
         return new(real, imaginary, value.semicycle);
     }
 
-
     public static CyclicalComplex Acos(CyclicalComplex value)
     {
         var io = new CyclicalComplex(0.0, 1.0, value.semicycle);
         var ro = new CyclicalComplex(1.0, 0.0, value.semicycle);
-
         return -io * Log(value + io * Sqrt(ro - value * value));
     }
 
     public static CyclicalComplex Tan(CyclicalComplex value)
         => Sin(value) / Cos(value);
 
-
     public static CyclicalComplex Tanh(CyclicalComplex value)
         => Sinh(value) / Cosh(value);
-
 
     public static CyclicalComplex Atan(CyclicalComplex value)
     {
@@ -367,7 +355,6 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
         var ro = new CyclicalComplex(1.0, 0.0, value.semicycle);
         return io / right * (Log(ro - io * value) - Log(ro + io * value));
     }
-
 
     public static CyclicalComplex Log(CyclicalComplex value)
     {
@@ -378,12 +365,8 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
     }
 
     public static CyclicalComplex Log(CyclicalComplex value, double baseValue)
-    {
-        var real = Math.Log(Abs(value));
-        var imaginary = Math.Atan2(value.imaginary, value.real);
-        NormalizeParts(ref real, ref imaginary, value.semicycle);
-        return new(real, imaginary, value.semicycle);
-    }
+        => Log(value) / Log(baseValue)
+        ;
 
     public static CyclicalComplex Log10(CyclicalComplex value)
         => Scale(Log(value), LOG_10_INV)
@@ -399,8 +382,8 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
     }
 
     public static CyclicalComplex Sqrt(CyclicalComplex value)
-        => FromPolarCoordinates(Math.Sqrt(value.Magnitude), value.Phase / 2.0);
-
+        => FromPolarCoordinates(Math.Sqrt(value.Magnitude), value.Phase / 2.0, value.semicycle)
+        ;
 
     public static CyclicalComplex Pow(CyclicalComplex value, CyclicalComplex power)
     {
@@ -419,8 +402,7 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
         var num1 = Abs(value);
         var num2 = Math.Atan2(imaginary, real);
         var num3 = real2 * num2 + imaginary2 * Math.Log(num1);
-        var num4 = Math.Pow(num1, real2) * Math.Pow(
-           Math.E, -imaginary2 * num2);
+        var num4 = Math.Pow(num1, real2) * Math.Pow(Math.E, -imaginary2 * num2);
         real = num4 * Math.Cos(num3);
         imaginary = num4 * Math.Sin(num3);
         NormalizeParts(ref real, ref imaginary, value.semicycle);
@@ -428,7 +410,8 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
     }
 
     public static CyclicalComplex Pow(CyclicalComplex value, double power)
-        => Pow(value, new CyclicalComplex(power, 0.0, value.semicycle));
+        => Pow(value, new CyclicalComplex(power, 0.0, value.semicycle))
+        ;
 
     private static CyclicalComplex Scale(CyclicalComplex value, double factor)
     {
