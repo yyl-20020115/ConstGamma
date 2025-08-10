@@ -14,20 +14,20 @@ public readonly struct CyclicalComplex(double real, double imaginary, double sem
     private const double LOG_10_INV = 0.43429448190325;
 
     public const double DefaultSemicycle = 1.34078079299426e+154;//Math.Sqrt(double.MaxValue)
-    public static readonly CyclicalComplex DefaultZero = new(0.0, 0.0, DefaultSemicycle);
-    public static readonly CyclicalComplex DefaultOne = new(1.0, 0.0, DefaultSemicycle);
-    public static readonly CyclicalComplex DefaultImaginaryOne = new(0.0, 1.0, DefaultSemicycle);
+    public static readonly CyclicalComplex DefaultZero = CyclicalZero();
+    public static readonly CyclicalComplex DefaultOne = CyclicalOne();
+    public static readonly CyclicalComplex DefaultImaginaryOne = CyclicalImaginaryOne();
 
     public static CyclicalComplex CyclicalZero(double semicycle = DefaultSemicycle)
-        => new(0.0, 0.0, semicycle)
+        => CyclicalPureReal(0.0, semicycle)
         ;
 
     public static CyclicalComplex CyclicalOne(double semicycle = DefaultSemicycle)
-        => new(1.0, 0.0, semicycle)
+        => CyclicalPureReal(1.0, semicycle)
         ;
 
     public static CyclicalComplex CyclicalImaginaryOne(double semicycle = DefaultSemicycle)
-        => new(0.0, 1.0, semicycle)
+        => CyclicalPureImaginary(1.0, semicycle)
         ;
 
     public static CyclicalComplex CyclicalPureReal(double real, double semicycle = DefaultSemicycle)
